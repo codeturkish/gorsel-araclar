@@ -2,6 +2,7 @@ fastapi
 uvicorn
 python-multipart
 vtracer
-rembg
+rembg[cpu]
 Pillow
 requests
+onnxruntime
