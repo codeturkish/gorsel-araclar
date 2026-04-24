@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Görsel Araçlar — Vektör & Arka Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0c0c;
+    --surface: #141414;
+    --border: rgba(255,255,255,0.08);
+    --text: #f0f0f0;
+    --muted: #666;
+    --accent: #e8ff47;
+    --accent-dim: rgba(232,255,71,0.1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 64px 64px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 40px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(12,12,12,0.9);
+    backdrop-filter: blur(20px);
+  }
+
+  .logo {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+
+  .nav-status {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #4ade80;
+    animation: blink 2s ease-in-out infinite;
+  }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* HERO */
+  .hero {
+    position: relative; z-index: 1;
+    padding: 160px 40px 80px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .hero-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+
+  h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(48px, 7vw, 96px);
+    line-height: 1.0;
+    letter-spacing: -2px;
+    margin-bottom: 24px;
+    font-weight: 400;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .hero-sub {
+    font-size: 16px;
+    color: var(--muted);
+    line-height: 1.8;
+    max-width: 480px;
+    font-weight: 300;
+  }
+
+  /* TOOLS SECTION */
+  .tools {
+    position: relative; z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 40px 120px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+  }
+
+  .tool-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 40px;
+    transition: border-color 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tool-card:first-child { border-radius: 16px 0 0 16px; }
+  .tool-card:last-child { border-radius: 0 16px 16px 0; }
+
+  .tool-card:hover { border-color: rgba(232,255,71,0.2); }
+
+  .tool-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .tool-card:hover::before { opacity: 1; }
+
+  .tool-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+
+  .tool-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 28px;
+    font-weight: 400;
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+
+  .tool-desc {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 32px;
+    line-height: 1.7;
+  }
+
+  /* Upload zone */
+  .upload-zone {
+    border: 1px dashed rgba(255,255,255,0.12);
+    border-radius: 8px;
+    padding: 32px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    background: rgba(255,255,255,0.02);
+  }
+
+  .upload-zone:hover {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .upload-zone.dragover {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+    transform: scale(1.02);
+  }
+
+  .upload-zone input {
+    position: absolute; inset: 0;
+    opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+
+  .upload-icon {
+    font-size: 24px;
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .upload-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  .upload-text span {
+    display: block;
+    color: var(--accent);
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+
+  /* Progress */
+  .progress-wrap {
+    display: none;
+    margin-top: 16px;
+  }
+
+  .progress-wrap.active { display: block; }
+
+  .progress-bar {
+    height: 2px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 1px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    transition: width 0.4s ease;
+    border-radius: 1px;
+  }
+
+  .progress-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  /* Result */
+  .result-wrap {
+    display: none;
+    margin-top: 16px;
+  }
+
+  .result-wrap.active { display: block; }
+
+  .result-preview {
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+  }
+
+  .result-preview img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+
+  .result-preview svg {
+    max-width: 100%;
+    max-height: 140px;
+  }
+
+  .download-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--accent);
+    color: #0c0c0c;
+    border: none;
+    border-radius: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+
+  .download-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+
+  .reset-btn {
+    display: block;
+    width: 100%;
+    margin-top: 8px;
+    padding: 10px;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .reset-btn:hover {
+    border-color: var(--muted);
+    color: var(--text);
+  }
+
+  /* Error */
+  .error-msg {
+    display: none;
+    margin-top: 12px;
+    padding: 12px;
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.2);
+    border-radius: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: #f87171;
+  }
+
+  .error-msg.active { display: block; }
+
+  /* FOOTER */
+  footer {
+    position: relative; z-index: 1;
+    border-top: 1px solid var(--border);
+    padding: 24px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  footer p {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* Mobile */
+  @media (max-width: 700px) {
+    nav { padding: 16px 20px; }
+    .hero { padding: 120px 20px 60px; }
+    .tools { grid-template-columns: 1fr; padding: 0 20px 80px; }
+    .tool-card:first-child { border-radius: 16px 16px 0 0; }
+    .tool-card:last-child { border-radius: 0 0 16px 16px; }
+    footer { padding: 20px; flex-direction: column; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">görsel_araçlar/</div>
+  <div class="nav-status">
+    <div class="status-dot"></div>
+    sistem aktif
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-label">// Yapay Zeka Destekli Görsel Araçlar</div>
+  <h1>Piksel'den<br><em>Vektöre.</em><br>Arka Plansız.</h1>
+  <p class="hero-sub">İki güçlü araç, sıfır karmaşıklık. JPG'nizi sonsuz çözünürlüklü SVG'ye çevirin veya arka planı tek tıkla kaldırın.</p>
+</section>
+
+<!-- TOOLS -->
+<section class="tools">
+
+  <!-- VEKTÖR -->
+  <div class="tool-card">
+    <div class="tool-num">01 / vektöre çevir</div>
+    <div class="tool-title">JPG → SVG<br>Dönüşümü</div>
+    <p class="tool-desc">Sonsuz çözünürlük. Boyut kaybı sıfır. Her ekranda kristal netliğinde.</p>
+
+    <div class="upload-zone" id="vectorZone">
+      <input type="file" id="vectorInput" accept="image/*">
+      <span class="upload-icon">⬡</span>
+      <div class="upload-text">
+        <span>Dosya seç veya sürükle</span>
+        JPG, PNG · Maks 10MB
+      </div>
+    </div>
+
+    <div class="progress-wrap" id="vectorProgress">
+      <div class="progress-bar"><div class="progress-fill" id="vectorBar"></div></div>
+      <div class="progress-label" id="vectorLabel">İşleniyor...</div>
+    </div>
+
+    <div class="result-wrap" id="vectorResult">
+      <div class="result-preview" id="vectorPreview"></div>
+      <button class="download-btn" id="vectorDownload">
+        <span>SVG dosyasını indir</span>
+        <span>↓</span>
+      </button>
+      <button class="reset-btn" onclick="resetTool('vector')">↺ Yeni dosya</button>
+    </div>
+
+    <div class="error-msg" id="vectorError"></div>
+  </div>
+
+  <!-- ARKA PLAN SİL -->
+  <div class="tool-card">
+    <div class="tool-num">02 / arka plan sil</div>
+    <div class="tool-title">Arka Plan<br>Kaldırma</div>
+    <p class="tool-desc">Yapay zeka ile otomatik arka plan silme. Şeffaf PNG olarak indirin.</p>
+
+    <div class="upload-zone" id="rembgZone">
+      <input type="file" id="rembgInput" accept="image/*">
+      <span class="upload-icon">◈</span>
+      <div class="upload-text">
+        <span>Dosya seç veya sürükle</span>
+        JPG, PNG · Maks 10MB
+      </div>
+    </div>
+
+    <div class="progress-wrap" id="rembgProgress">
+      <div class="progress-bar"><div class="progress-fill" id="rembgBar"></div></div>
+      <div class="progress-label" id="rembgLabel">Arka plan analiz ediliyor...</div>
+    </div>
+
+    <div class="result-wrap" id="rembgResult">
+      <div class="result-preview" id="rembgPreview"></div>
+      <button class="download-btn" id="rembgDownload">
+        <span>PNG dosyasını indir</span>
+        <span>↓</span>
+      </button>
+      <button class="reset-btn" onclick="resetTool('rembg')">↺ Yeni dosya</button>
+    </div>
+
+    <div class="error-msg" id="rembgError"></div>
+  </div>
+
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>görsel_araçlar — 2025</p>
+  <p>vtracer + rembg · açık kaynak</p>
+</footer>
+
+<script>
+const API = 'https://gorsel-araclar-production.up.railway.app';
+
+// Drag & drop
+['vectorZone','rembgZone'].forEach(id => {
+  const zone = document.getElementById(id);
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file) id === 'vectorZone' ? handleVector(file) : handleRembg(file);
+  });
+});
+
+document.getElementById('vectorInput').addEventListener('change', e => {
+  if (e.target.files[0]) handleVector(e.target.files[0]);
+});
+
+document.getElementById('rembgInput').addEventListener('change', e => {
+  if (e.target.files[0]) handleRembg(e.target.files[0]);
+});
+
+function showProgress(type, msg) {
+  document.getElementById(type+'Zone').style.display = 'none';
+  document.getElementById(type+'Progress').classList.add('active');
+  document.getElementById(type+'Result').classList.remove('active');
+  document.getElementById(type+'Error').classList.remove('active');
+  document.getElementById(type+'Label').textContent = msg;
+  animateBar(type+'Bar');
+}
+
+function animateBar(barId) {
+  const bar = document.getElementById(barId);
+  bar.style.width = '0%';
+  let w = 0;
+  const iv = setInterval(() => {
+    w += Math.random() * 6 + 2;
+    if (w >= 90) { clearInterval(iv); w = 90; }
+    bar.style.width = w + '%';
+  }, 200);
+  bar._interval = iv;
+}
+
+function finishBar(barId) {
+  const bar = document.getElementById(barId);
+  clearInterval(bar._interval);
+  bar.style.width = '100%';
+}
+
+function showResult(type) {
+  finishBar(type+'Bar');
+  setTimeout(() => {
+    document.getElementById(type+'Progress').classList.remove('active');
+    document.getElementById(type+'Result').classList.add('active');
+  }, 400);
+}
+
+function showError(type, msg) {
+  finishBar(type+'Bar');
+  document.getElementById(type+'Progress').classList.remove('active');
+  document.getElementById(type+'Zone').style.display = 'block';
+  const err = document.getElementById(type+'Error');
+  err.textContent = '⚠ ' + msg;
+  err.classList.add('active');
+}
+
+async function handleVector(file) {
+  showProgress('vector', 'Vektöre dönüştürülüyor...');
+  try {
+    const form = new FormData();
+    form.append('dosya', file);
+    const res = await fetch(API + '/vektore-cevir', { method: 'POST', body: form });
+    if (!res.ok) throw new Error('Sunucu hatası: ' + res.status);
+    const svgText = await res.text();
+    if (svgText.includes('"hata"')) throw new Error('Dönüşüm başarısız');
+
+    // Preview
+    const preview = document.getElementById('vectorPreview');
+    preview.innerHTML = svgText;
+
+    // Download
+    const blob = new Blob([svgText], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const btn = document.getElementById('vectorDownload');
+    btn.onclick = () => {
+      const a = document.createElement('a');
+      a.href = url; a.download = 'vektor-cikti.svg'; a.click();
+    };
+
+    showResult('vector');
+  } catch(e) {
+    showError('vector', e.message || 'Bir hata oluştu, tekrar deneyin.');
+  }
+}
+
+async function handleRembg(file) {
+  showProgress('rembg', 'Arka plan kaldırılıyor...');
+  try {
+    const form = new FormData();
+    form.append('dosya', file);
+    const res = await fetch(API + '/arka-plan-sil', { method: 'POST', body: form });
+    if (!res.ok) throw new Error('Sunucu hatası: ' + res.status);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+
+    // Preview
+    const img = document.createElement('img');
+    img.src = url;
+    const preview = document.getElementById('rembgPreview');
+    preview.style.background = 'repeating-conic-gradient(#222 0% 25%, #1a1a1a 0% 50%) 0 0 / 16px 16px';
+    preview.innerHTML = '';
+    preview.appendChild(img);
+
+    // Download
+    const btn = document.getElementById('rembgDownload');
+    btn.onclick = () => {
+      const a = document.createElement('a');
+      a.href = url; a.download = 'arkaplan-silindi.png'; a.click();
+    };
+
+    showResult('rembg');
+  } catch(e) {
+    showError('rembg', e.message || 'Bir hata oluştu, tekrar deneyin.');
+  }
+}
+
+function resetTool(type) {
+  document.getElementById(type+'Zone').style.display = 'block';
+  document.getElementById(type+'Progress').classList.remove('active');
+  document.getElementById(type+'Result').classList.remove('active');
+  document.getElementById(type+'Error').classList.remove('active');
+  document.getElementById(type+'Bar').style.width = '0%';
+  const input = document.getElementById(type+'Input');
+  if (input) input.value = '';
+}
+</script>
+</body>
+</html>
