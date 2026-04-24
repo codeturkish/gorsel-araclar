@@ -6,3 +6,4 @@ rembg[cpu]
 Pillow
 requests
 onnxruntime
+httpx
